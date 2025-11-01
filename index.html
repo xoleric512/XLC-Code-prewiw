@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xoleRun — Ultimate Hacker-style Playground</title>
+    <style>
+        :root {
+            --bg: #0b0f12;
+            --panel: #0f1416;
+            --muted: #9aa5a6;
+            --accent: #39ff14;
+            --glass: rgba(255, 255, 255, 0.03);
+            --danger: #ff4757;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Courier New', monospace;
+            background: var(--bg);
+            color: #cfeecf;
+            overflow: hidden;
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 8px;
+            gap: 8px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .brand {
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 1.2rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        button {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--muted);
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        button.primary {
+            background: linear-gradient(90deg, rgba(57, 255, 20, 0.08), rgba(57, 255, 20, 0.03));
+            border-color: rgba(57, 255, 20, 0.18);
+            color: #caffc7;
+        }
+
+        button.danger {
+            background: rgba(255, 71, 87, 0.1);
+            border-color: rgba(255, 71, 87, 0.2);
+            color: #ff9aa2;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            gap: 8px;
+            overflow: hidden;
+        }
+
+        .editor-section {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            background: var(--panel);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            overflow: hidden;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .editor-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .editor-tab {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .editor-tab.active {
+            background: rgba(57, 255, 20, 0.15);
+            color: var(--accent);
+        }
+
+        .editor-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .editor-pane {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            background: #071014;
+            border-radius: 8px;
+            margin: 8px;
+            overflow: hidden;
+        }
+
+        .editor-pane.active {
+            display: flex;
+        }
+
+        .editor-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            font-weight: 600;
+            color: var(--muted);
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .editor {
+            flex: 1;
+            background: #020406;
+            border: none;
+            padding: 12px;
+            color: #d9ffee;
+            outline: none;
+            resize: none;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .preview-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(180deg, #071014, #021013);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            overflow: hidden;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.15);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .preview-controls {
+            display: flex;
+            gap: 6px;
+        }
+
+        .preview {
+            flex: 1;
+            border: none;
+            background: white;
+        }
+
+        footer {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            color: var(--muted);
+            font-size: 0.75rem;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+        }
+
+        .hack-badge {
+            background: rgba(57, 255, 20, 0.08);
+            color: var(--accent);
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+        }
+
+        .status {
+            color: var(--accent);
+            font-size: 0.8rem;
+        }
+
+        /* Mobil uchun maxsus stillar */
+        @media (min-width: 768px) {
+            .main-content {
+                flex-direction: row;
+            }
+            
+            .editor-section {
+                flex: 0 0 50%;
+            }
+            
+            .preview-section {
+                flex: 0 0 50%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app {
+                padding: 6px;
+            }
+            
+            .topbar {
+                padding: 6px 10px;
+            }
+            
+            .brand {
+                font-size: 1rem;
+            }
+            
+            button {
+                padding: 5px 8px;
+                font-size: 0.8rem;
+            }
+            
+            .editor {
+                padding: 10px;
+                font-size: 0.85rem;
+            }
+            
+            footer {
+                font-size: 0.7rem;
+            }
+        }
+
+        /* Scrollbar stillari */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(57, 255, 20, 0.3);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(57, 255, 20, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="topbar">
+            <div class="brand">xoleRun</div>
+            <div class="controls">
+                <button id="toggleAuto">Auto: ON</button>
+                <button id="runBtn" class="primary">Ishga tushirish</button>
+                <button id="downloadBtn">Export</button>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="editor-section">
+                <div class="editor-header">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div class="hack-badge">H4CK</div>
+                        <div style="color: var(--muted); font-size: 0.9rem;">HTML / CSS / JS</div>
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <button id="loadSample">Namuna</button>
+                        <button id="saveLocal">Saqlash</button>
+                        <button id="loadLocal">Yuklash</button>
+                    </div>
+                </div>
+                
+                <div class="editor-tabs">
+                    <div class="editor-tab active" data-tab="html">HTML</div>
+                    <div class="editor-tab" data-tab="css">CSS</div>
+                    <div class="editor-tab" data-tab="js">JavaScript</div>
+                </div>
+                
+                <div class="editor-container">
+                    <div class="editor-pane active" id="html-pane">
+                        <div class="editor-title">HTML</div>
+                        <textarea id="html" class="editor"></textarea>
+                    </div>
+                    <div class="editor-pane" id="css-pane">
+                        <div class="editor-title">CSS</div>
+                        <textarea id="css" class="editor"></textarea>
+                    </div>
+                    <div class="editor-pane" id="js-pane">
+                        <div class="editor-title">JavaScript</div>
+                        <textarea id="js" class="editor"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="preview-section">
+                <div class="preview-header">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div>Natija</div>
+                        <div id="status" class="status">Tayyor</div>
+                    </div>
+                    <div class="preview-controls">
+                        <button id="openNew">Yangi oynada</button>
+                        <button id="fullscreen">To'liq ekran</button>
+                        <button id="clearBtn" class="danger">Tozalash</button>
+                    </div>
+                </div>
+                <iframe id="preview" class="preview" sandbox="allow-scripts allow-same-origin"></iframe>
+            </div>
+        </div>
+        
+        <footer>
+            <div>Qisqa tugmalar: Ctrl+Enter = Ishga tushirish · Ctrl+S = Saqlash · Ctrl+L = Yuklash</div>
+            <div>Avtosaqlash yoqilgan · Moslashuvchan interfeys · Qorong'u/Neon mavzu</div>
+        </footer>
+    </div>
+
+    <script>
+        // Elementlarni tanlab olish
+        const htmlEl = document.getElementById('html');
+        const cssEl = document.getElementById('css');
+        const jsEl = document.getElementById('js');
+        const preview = document.getElementById('preview');
+        const runBtn = document.getElementById('runBtn');
+        const toggleAuto = document.getElementById('toggleAuto');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const loadSample = document.getElementById('loadSample');
+        const saveLocal = document.getElementById('saveLocal');
+        const loadLocal = document.getElementById('loadLocal');
+        const openNew = document.getElementById('openNew');
+        const fullscreen = document.getElementById('fullscreen');
+        const status = document.getElementById('status');
+        const editorTabs = document.querySelectorAll('.editor-tab');
+        const editorPanes = document.querySelectorAll('.editor-pane');
+
+        // Dastur holati
+        let autoRun = true;
+        let timer = null;
+        const DEBOUNCE = 800;
+
+        // Boshlang'ich kod
+        htmlEl.value = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mening loyiham</title>
+</head>
+<body>
+  <h1>Salom xoleRun</h1>
+  <div id="out"></div>
+  <p>Mobil qurilmalar uchun moslashtirilgan</p>
+</body>
+</html>`;
+
+        cssEl.value = `body {
+  background: #060606;
+  color: #cfeecf;
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  line-height: 1.6;
+} 
+
+h1 {
+  color: #39ff14;
+  text-align: center;
+}
+
+p {
+  margin: 15px 0;
+}`;
+
+        jsEl.value = `// JavaScript kodi
+const out = document.getElementById('out');
+out.innerHTML = '<p><strong>Ishga tushirilgan:</strong> ' + new Date().toLocaleTimeString() + '</p>';
+
+// Mobil qurilma tekshiruvi
+if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+  out.innerHTML += '<p style="color:#39ff14;">📱 Mobil qurilmadasiz!</p>';
+}
+
+console.log('xoleRun tayyor');`;
+
+        // Hujjat yaratish
+        function buildDoc() {
+            const html = htmlEl.value;
+            const css = '<style>' + cssEl.value + '</style>';
+            const js = '<script>try{' + jsEl.value + '}catch(e){document.body.insertAdjacentHTML("beforeend",`<pre style=\"color:red\">JS Xatosi: ${e.stack}</pre>`)}<\/script>';
+            return html.replace(/<\/body>/i, css + js + '</body>');
+        }
+
+        // Kodni ishga tushirish
+        function run() {
+            try {
+                const doc = buildDoc();
+                const blob = new Blob([doc], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                preview.src = url;
+                status.textContent = 'Ishga tushirildi: ' + new Date().toLocaleTimeString();
+                setTimeout(() => URL.revokeObjectURL(url), 5000);
+            } catch (e) {
+                status.textContent = 'Xato: ' + e.message;
+                console.error(e);
+            }
+        }
+
+        // Avtomatik ishga tushirishni kechiktirish
+        function debounceRun() {
+            if (!autoRun) return;
+            clearTimeout(timer);
+            timer = setTimeout(run, DEBOUNCE);
+            status.textContent = 'Yangilanmoqda...';
+        }
+
+        // Tablar uchun hodisa qo'shish
+        editorTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.getAttribute('data-tab');
+                
+                // Faol tabni o'zgartirish
+                editorTabs.forEach(t => t.classList.remove('active'));
+                editorPanes.forEach(p => p.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(`${tabName}-pane`).classList.add('active');
+            });
+        });
+
+        // Input hodisalari
+        [htmlEl, cssEl, jsEl].forEach(el => el.addEventListener('input', debounceRun));
+        
+        // Tugmalar uchun hodisalar
+        runBtn.addEventListener('click', run);
+        
+        toggleAuto.addEventListener('click', () => {
+            autoRun = !autoRun;
+            toggleAuto.textContent = 'Auto: ' + (autoRun ? 'ON' : 'OFF');
+            if (autoRun) run();
+        });
+
+        // Lokal saqlash
+        function saveToLocal() {
+            localStorage.setItem('xoleRun.state', JSON.stringify({
+                html: htmlEl.value,
+                css: cssEl.value,
+                js: jsEl.value
+            }));
+            status.textContent = 'Lokal saqlandi';
+        }
+
+        function loadFromLocal() {
+            const raw = localStorage.getItem('xoleRun.state');
+            if (raw) {
+                const obj = JSON.parse(raw);
+                htmlEl.value = obj.html;
+                cssEl.value = obj.css;
+                jsEl.value = obj.js;
+                status.textContent = 'Lokal yuklandi';
+                debounceRun();
+            } else {
+                status.textContent = 'Lokal saqlov topilmadi';
+            }
+        }
+
+        saveLocal.addEventListener('click', saveToLocal);
+        loadLocal.addEventListener('click', loadFromLocal);
+
+        // Tozalash
+        clearBtn.addEventListener('click', () => {
+            if (confirm('Barcha kodlarni tozalashni xohlaysizmi?')) {
+                htmlEl.value = '';
+                cssEl.value = '';
+                jsEl.value = '';
+                debounceRun();
+                status.textContent = 'Tozalandi';
+            }
+        });
+
+        // Namuna kodni yuklash
+        loadSample.addEventListener('click', () => {
+            htmlEl.value = `<div class="container">
+  <h1>Mobil interfeys demo</h1>
+  <div class="card">
+    <h2>Karta sarlavhasi</h2>
+    <p>Bu mobil qurilmalar uchun moslashtirilgan karta.</p>
+    <button onclick="alert('Tugma bosildi!')">Tugma</button>
+  </div>
+  <div id="output"></div>
+</div>`;
+            
+            cssEl.value = `body {
+  background: #0f1416;
+  color: #cfeecf;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 15px;
+}
+
+.container {
+  max-width: 100%;
+}
+
+h1 {
+  color: #39ff14;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 15px;
+  border: 1px solid rgba(57,255,20,0.1);
+}
+
+h2 {
+  color: #9aa5a6;
+  margin-top: 0;
+}
+
+button {
+  background: rgba(57,255,20,0.1);
+  color: #caffc7;
+  border: 1px solid rgba(57,255,20,0.3);
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}`;
+            
+            jsEl.value = `// Dinamik tarkib yaratish
+const output = document.getElementById('output');
+output.innerHTML = '<p>Ushbu demo mobil qurilmalar uchun yaratilgan</p>';
+
+// Vaqt yangilanishi
+function updateTime() {
+  const now = new Date();
+  document.querySelector('h1').textContent = 
+    'Mobil demo: ' + now.toLocaleTimeString();
+}
+
+setInterval(updateTime, 1000);
+updateTime();
+
+// Touch hodisalari
+document.addEventListener('touchstart', function() {
+  output.innerHTML += '<p>Touch aniqlandi!</p>';
+});`;
+            
+            status.textContent = 'Namuna yuklandi';
+            debounceRun();
+        });
+
+        // Eksport qilish
+        function exportZip() {
+            const doc = buildDoc();
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([doc], { type: 'text/html' }));
+            a.download = 'xoleRun-index.html';
+            a.click();
+            status.textContent = 'HTML fayl eksport qilindi';
+        }
+
+        downloadBtn.addEventListener('click', exportZip);
+        
+        // Yangi oynada ochish
+        openNew.addEventListener('click', () => {
+            const w = window.open();
+            w.document.write(buildDoc());
+            w.document.close();
+        });
+        
+        // To'liq ekran rejimi
+        fullscreen.addEventListener('click', () => {
+            if (preview.requestFullscreen) {
+                preview.requestFullscreen();
+            } else if (preview.webkitRequestFullscreen) {
+                preview.webkitRequestFullscreen();
+            } else if (preview.msRequestFullscreen) {
+                preview.msRequestFullscreen();
+            }
+        });
+
+        // Klaviatura qisqa tugmalari
+        window.addEventListener('keydown', e => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                run();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+                e.preventDefault();
+                saveToLocal();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'l') {
+                e.preventDefault();
+                loadFromLocal();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 's') {
+                e.preventDefault();
+                exportZip();
+            }
+        });
+
+        // Dasturni ishga tushirish
+        debounceRun();
+    </script>
+</body>
+</html>
